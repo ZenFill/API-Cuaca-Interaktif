@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Cuaca Canggih</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="weather-app">
+        <h2 class="app-title">Perkiraan Cuaca Global</h2>
+
+        <div class="header-controls">
+            <div class="search-box">
+                <input type="text" id="city-input" placeholder="Masukkan Nama Kota..." value="Jakarta">
+                <button id="search-button">Cari</button>
+            </div>
+
+            <div class="unit-toggle">
+                <button id="celsius-btn" class="active">°C</button>
+                <button id="fahrenheit-btn">°F</button>
+            </div>
+        </div>
+
+        <div id="current-weather-data" class="weather-info hidden">
+            <div class="location-name" id="location-name"></div>
+
+            <div class="main-temp-section">
+                <img id="weather-icon" src="" alt="Weather Icon" class="weather-icon">
+                <div class="main-temp"><span id="current-temp">--</span><span class="unit-symbol">°C</span></div>
+            </div>
+
+            <div class="description" id="weather-description"></div>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="label">Dirasakan</span>
+                    <span class="value" id="feels-like">--</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Kelembaban</span>
+                    <span class="value" id="humidity">--%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Angin</span>
+                    <span class="value" id="wind-speed">-- m/s</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Tekanan</span>
+                    <span class="value" id="pressure">-- hPa</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Min Harian</span>
+                    <span class="value" id="min-temp">--</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Max Harian</span>
+                    <span class="value" id="max-temp">--</span>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="forecast-title hidden" id="forecast-header">Perkiraan 5 Hari Ke Depan</h3>
+        <div id="forecast-container" class="forecast-container hidden">
+        </div>
+
+        <div id="error-message" class="error-text hidden"></div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,232 @@
+/* RESET DASAR & FONT */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    #4e54c8 0%,
+    #8f94fb 100%
+  ); /* Gradasi Biru-Ungu */
+  padding: 20px;
+}
+
+/* KOTAK APLIKASI UTAMA */
+.weather-app {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 95%;
+  max-width: 800px;
+}
+
+.app-title {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+/* KONTROL HEADER (Pencarian & Toggle) */
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap; /* Responsif: Pindah baris di layar kecil */
+  gap: 15px;
+}
+
+.search-box {
+  display: flex;
+  flex-grow: 1;
+  max-width: 350px;
+}
+
+#city-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px 0 0 8px;
+  font-size: 16px;
+  outline: none;
+}
+
+#search-button {
+  padding: 10px 15px;
+  border: none;
+  background-color: #4e54c8;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 0 8px 8px 0;
+  transition: background-color 0.3s;
+}
+#search-button:hover {
+  background-color: #3c4199;
+}
+
+/* UNIT TOGGLE */
+.unit-toggle button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#celsius-btn {
+  border-radius: 8px 0 0 8px;
+}
+#fahrenheit-btn {
+  border-radius: 0 8px 8px 0;
+}
+.unit-toggle button.active {
+  background-color: #4e54c8;
+  color: white;
+  border-color: #4e54c8;
+}
+
+/* DATA CUACA SAAT INI */
+.weather-info {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 30px;
+  margin-bottom: 30px;
+}
+.location-name {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 15px;
+}
+.main-temp-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+.weather-icon {
+  width: 100px;
+  height: 100px;
+}
+.main-temp {
+  font-size: 64px;
+  font-weight: 300;
+  color: #4e54c8;
+  margin-left: 15px;
+}
+.description {
+  font-size: 20px;
+  color: #777;
+  margin-bottom: 30px;
+  text-transform: capitalize;
+}
+
+/* DETAIL GRID (RESPONSIVE) */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(120px, 1fr)
+  ); /* 3 Kolom atau lebih */
+  gap: 15px;
+  text-align: left;
+}
+.detail-item {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.label {
+  display: block;
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 5px;
+}
+.value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* PERKIRAAN 5 HARI */
+.forecast-title {
+  color: #555;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+.forecast-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto; /* Memungkinkan scroll horizontal di layar kecil */
+  padding-bottom: 10px;
+  justify-content: space-between; /* Rata Kanan-Kiri di desktop */
+}
+
+.forecast-card {
+  background: #fff;
+  padding: 15px 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  min-width: 120px; /* Lebar minimum untuk setiap kartu */
+  flex-shrink: 0;
+  text-align: center;
+}
+.forecast-date {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #4e54c8;
+}
+.forecast-temp {
+  font-size: 14px;
+  color: #777;
+}
+.forecast-icon {
+  width: 50px;
+  height: 50px;
+}
+
+/* UTILITY & ERROR */
+.hidden {
+  display: none !important;
+}
+.error-text {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: left;
+}
+
+/* MEDIA QUERIES untuk Responsif */
+@media (max-width: 600px) {
+  .header-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-box {
+    max-width: 100%;
+  }
+  .details-grid {
+    grid-template-columns: 1fr 1fr; /* Jadi 2 kolom di mobile */
+  }
+  .unit-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .forecast-container {
+    justify-content: flex-start; /* Memaksa scroll horizontal di mobile */
+  }
+}
