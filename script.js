@@ -263,18 +263,7 @@ function updateDisplayUnits(newUnit) {
   elements.celsiusBtn.classList.toggle("active", newUnit === "metric");
   elements.fahrenheitBtn.classList.toggle("active", newUnit === "imperial");
 
-<<<<<<< HEAD
   fetchAndAnimateData(cityToFetch);
-=======
-  if (currentWeatherData && currentWeatherData.coord) {
-    fetchAndAnimateData({
-      lat: currentWeatherData.coord.lat,
-      lon: currentWeatherData.coord.lon
-    });
-  } else {
-    fetchAndAnimateData(currentWeatherData.name);
-  }
->>>>>>> 1a53fe8ece5617be6484cbf5407687fff9b5b9a3
 }
 
 // Event Listeners
