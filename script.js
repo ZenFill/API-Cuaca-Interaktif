@@ -4,13 +4,13 @@
 const API_KEY = "bd21b06342623e36c1e175bf9268d88b";
 const CURRENT_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
 const FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast";
-const TRANSITION_DURATION = 400; // Harap sama dengan transisi di CSS
+const TRANSITION_DURATION = 400;
 // =============================================================
 
 let currentUnit = "metric";
 let currentWeatherData = null;
 
-// Mendapatkan elemen DOM (disingkat untuk kemudahan)
+// Mendapatkan elemen DOM
 const elements = {
   cityInput: document.getElementById("city-input"),
   searchButton: document.getElementById("search-button"),
@@ -32,11 +32,16 @@ const elements = {
   maxTemp: document.getElementById("max-temp"),
 };
 
-// --- FUNGSI TEMA DINAMIS (Cool Tones/Dark Mode Focus) ---
+// --- FUNGSI UTILITY BARU: Mengelola Status Tombol ---
+function toggleUnitButtons(enable) {
+  elements.celsiusBtn.disabled = !enable;
+  elements.fahrenheitBtn.disabled = !enable;
+}
+
+// --- FUNGSI TEMA DINAMIS ---
 function updateBackground(condition) {
   const body = document.body;
   let newGradient;
-
   const conditionLower = condition.toLowerCase();
 
   // Skema Warna COOL TONES / DARK MODE
@@ -67,22 +72,21 @@ function updateBackground(condition) {
   } else {
     newGradient = "linear-gradient(135deg, #2C3E50 0%, #4A637D 100%)";
   }
-
   body.style.background = newGradient;
 }
 
-// --- FUNGSI UTAMA PENGAMBIL DATA (FIX JUMPY) ---
-
+// --- FUNGSI UTAMA PENGAMBIL DATA (FINAL FIX) ---
 async function fetchAndAnimateData(city) {
   if (!city) {
     displayError("Silakan masukkan nama kota.");
     return;
   }
 
-  // PERBAIKAN BUG: Reset error message dengan tegas di awal
-  elements.errorMsgDiv.classList.add("hidden");
+  // **TINDAKAN KRITIS:** Nonaktifkan tombol saat fetch dimulai (anti-bug)
+  toggleUnitButtons(false);
 
-  // 1. Inisiasi Fade-Out
+  // 1. Inisiasi Fade-Out dan Reset Visual
+  elements.errorMsgDiv.classList.add("hidden");
   elements.weatherDataDiv.classList.add("fade-out");
   elements.forecastContainer.classList.add("fade-out");
   elements.forecastHeader.classList.add("fade-out");
@@ -120,23 +124,25 @@ async function fetchAndAnimateData(city) {
     errorOccurred = error;
   }
 
-  // 3. Setelah fetch selesai, tunggu transisi lama (fade-out) selesai
+  // 3. Tunggu transisi lama (fade-out) selesai
   setTimeout(() => {
+    // Hapus kelas fade-out
     elements.weatherDataDiv.classList.remove("fade-out");
     elements.forecastContainer.classList.remove("fade-out");
     elements.forecastHeader.classList.remove("fade-out");
 
     if (errorOccurred) {
-      // Tampilkan error dan sembunyikan semua data jika fetch gagal
-      displayError(`Pencarian gagal: ${errorOccurred.message}.`);
+      currentWeatherData = null; // Reset state global data
+
       elements.weatherDataDiv.classList.add("hidden");
       elements.forecastContainer.classList.add("hidden");
       elements.forecastHeader.classList.add("hidden");
+      displayError(`Pencarian gagal: ${errorOccurred.message}.`);
     } else {
-      // Tampilkan data baru dan pastikan error message tersembunyi
-      elements.errorMsgDiv.classList.add("hidden");
+      // Jika SUKSES, tampilkan data baru dan aktifkan tombol
       displayCurrentWeather(dataLoaded);
       processAndDisplayForecast(forecastDataLoaded);
+      toggleUnitButtons(true);
     }
   }, TRANSITION_DURATION);
 }
@@ -145,6 +151,7 @@ async function fetchAndAnimateData(city) {
 function displayCurrentWeather(data) {
   const unitSymbol = currentUnit === "metric" ? "°C" : "°F";
   const speedUnit = currentUnit === "metric" ? " m/s" : " mph";
+
   currentWeatherData = data;
 
   elements.locationName.textContent = `${data.name}, ${data.sys.country}`;
@@ -224,21 +231,33 @@ function processAndDisplayForecast(data) {
 function displayError(message) {
   elements.errorMsgDiv.textContent = message;
   elements.errorMsgDiv.classList.remove("hidden");
+
   elements.weatherDataDiv.classList.add("hidden");
   elements.forecastContainer.classList.add("hidden");
   elements.forecastHeader.classList.add("hidden");
+
   updateBackground("");
 }
 
 function updateDisplayUnits(newUnit) {
-  if (newUnit === currentUnit || !currentWeatherData) return;
+  if (newUnit === currentUnit) return;
+
+  // Ambil nama kota dari global state (yang terakhir sukses)
+  const cityToFetch = currentWeatherData
+    ? currentWeatherData.name
+    : elements.cityInput.value.trim();
+
+  if (!cityToFetch) {
+    displayError("Silakan masukkan nama kota.");
+    return;
+  }
 
   currentUnit = newUnit;
 
   elements.celsiusBtn.classList.toggle("active", newUnit === "metric");
   elements.fahrenheitBtn.classList.toggle("active", newUnit === "imperial");
 
-  fetchAndAnimateData(currentWeatherData.name);
+  fetchAndAnimateData(cityToFetch);
 }
 
 // Event Listeners
