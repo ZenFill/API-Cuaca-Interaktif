@@ -93,7 +93,13 @@ async function fetchAndAnimateData(city) {
 
   // 2. Lakukan Fetch API secara Asinkron
   const unitParam = currentUnit === "metric" ? "metric" : "imperial";
-  const currentWeatherApi = `${CURRENT_WEATHER_URL}?q=${city}&appid=${API_KEY}&units=${unitParam}&lang=id`;
+
+  let currentWeatherApi;
+  if (typeof query === 'object' && query.lat && query.lon) {
+    currentWeatherApi = `${CURRENT_WEATHER_URL}?lat=${query.lat}&lon=${query.lon}&appid=${API_KEY}&units=${unitParam}&lang=id`;
+  } else {
+    currentWeatherApi = `${CURRENT_WEATHER_URL}?q=${query}&appid=${API_KEY}&units=${unitParam}&lang=id`;
+  }
 
   let dataLoaded = null;
   let forecastDataLoaded = null;
@@ -173,7 +179,7 @@ function displayCurrentWeather(data) {
     data.main.temp_max
   )}${unitSymbol}`;
 
-  updateBackground(data.weather[0].description);
+  updateBackground(data.weather[0].main);
 
   elements.weatherDataDiv.classList.remove("hidden");
 }
@@ -257,7 +263,18 @@ function updateDisplayUnits(newUnit) {
   elements.celsiusBtn.classList.toggle("active", newUnit === "metric");
   elements.fahrenheitBtn.classList.toggle("active", newUnit === "imperial");
 
+<<<<<<< HEAD
   fetchAndAnimateData(cityToFetch);
+=======
+  if (currentWeatherData && currentWeatherData.coord) {
+    fetchAndAnimateData({
+      lat: currentWeatherData.coord.lat,
+      lon: currentWeatherData.coord.lon
+    });
+  } else {
+    fetchAndAnimateData(currentWeatherData.name);
+  }
+>>>>>>> 1a53fe8ece5617be6484cbf5407687fff9b5b9a3
 }
 
 // Event Listeners
