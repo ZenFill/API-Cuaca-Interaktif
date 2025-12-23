@@ -76,8 +76,8 @@ function updateBackground(condition) {
 }
 
 // --- FUNGSI UTAMA PENGAMBIL DATA (FINAL FIX) ---
-async function fetchAndAnimateData(city) {
-  if (!city) {
+async function fetchAndAnimateData(query) {
+  if (!query) {
     displayError("Silakan masukkan nama kota.");
     return;
   }
