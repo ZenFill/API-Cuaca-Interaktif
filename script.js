@@ -95,7 +95,7 @@ async function fetchAndAnimateData(query) {
   const unitParam = currentUnit === "metric" ? "metric" : "imperial";
 
   let currentWeatherApi;
-  if (typeof query === 'object' && query.lat && query.lon) {
+  if (typeof query === "object" && query.lat && query.lon) {
     currentWeatherApi = `${CURRENT_WEATHER_URL}?lat=${query.lat}&lon=${query.lon}&appid=${API_KEY}&units=${unitParam}&lang=id`;
   } else {
     currentWeatherApi = `${CURRENT_WEATHER_URL}?q=${query}&appid=${API_KEY}&units=${unitParam}&lang=id`;
