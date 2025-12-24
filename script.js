@@ -1,286 +1,320 @@
-// =============================================================
-//              KONFIGURASI API (GANTI DENGAN KEY ASLI ANDA)
-// =============================================================
-const API_KEY = "bd21b06342623e36c1e175bf9268d88b";
-const CURRENT_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
-const FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast";
-const TRANSITION_DURATION = 400;
-// =============================================================
-
-let currentUnit = "metric";
-let currentWeatherData = null;
-
-// Mendapatkan elemen DOM
-const elements = {
-  cityInput: document.getElementById("city-input"),
-  searchButton: document.getElementById("search-button"),
-  weatherDataDiv: document.getElementById("current-weather-data"),
-  errorMsgDiv: document.getElementById("error-message"),
-  forecastContainer: document.getElementById("forecast-container"),
-  forecastHeader: document.getElementById("forecast-header"),
-  celsiusBtn: document.getElementById("celsius-btn"),
-  fahrenheitBtn: document.getElementById("fahrenheit-btn"),
-  locationName: document.getElementById("location-name"),
-  currentTemp: document.getElementById("current-temp"),
-  weatherDesc: document.getElementById("weather-description"),
-  feelsLike: document.getElementById("feels-like"),
-  humidity: document.getElementById("humidity"),
-  windSpeed: document.getElementById("wind-speed"),
-  pressure: document.getElementById("pressure"),
-  weatherIcon: document.getElementById("weather-icon"),
-  minTemp: document.getElementById("min-temp"),
-  maxTemp: document.getElementById("max-temp"),
+/**
+ * KONFIGURASI DAN KONSTANTA APLIKASI
+ */
+const CONFIG = {
+  API_KEY: "bd21b06342623e36c1e175bf9268d88b",
+  BASE_URL: {
+    CURRENT: "https://api.openweathermap.org/data/2.5/weather",
+    FORECAST: "https://api.openweathermap.org/data/2.5/forecast",
+  },
+  ANIMATION_DURATION: 400,
+  TEMP_THRESHOLDS: {
+    HOT: 30,
+    WARM: 20,
+    COOL: 10,
+  },
 };
 
-// --- FUNGSI UTILITY BARU: Mengelola Status Tombol ---
-function toggleUnitButtons(enable) {
-  elements.celsiusBtn.disabled = !enable;
-  elements.fahrenheitBtn.disabled = !enable;
+const UI_CLASSES = {
+  HIDDEN: "hidden",
+  FADE_OUT: "fade-out",
+  ACTIVE: "active",
+};
+
+/**
+ * STATE MANAGEMENT
+ */
+let state = {
+  unit: "metric", // 'metric' or 'imperial'
+  currentData: null,
+};
+
+/**
+ * SELEKTOR DOM
+ */
+const dom = {
+  inputs: {
+    city: document.getElementById("city-input"),
+    searchBtn: document.getElementById("search-button"),
+    celsiusBtn: document.getElementById("celsius-btn"),
+    fahrenheitBtn: document.getElementById("fahrenheit-btn"),
+  },
+  containers: {
+    weatherData: document.getElementById("current-weather-data"),
+    forecast: document.getElementById("forecast-container"),
+    forecastHeader: document.getElementById("forecast-header"),
+    errorMsg: document.getElementById("error-message"),
+    unitSymbol: document.querySelector(".unit-symbol"),
+  },
+  weatherInfo: {
+    location: document.getElementById("location-name"),
+    temp: document.getElementById("current-temp"),
+    desc: document.getElementById("weather-description"),
+    feelsLike: document.getElementById("feels-like"),
+    humidity: document.getElementById("humidity"),
+    wind: document.getElementById("wind-speed"),
+    pressure: document.getElementById("pressure"),
+    icon: document.getElementById("weather-icon"),
+    minTemp: document.getElementById("min-temp"),
+    maxTemp: document.getElementById("max-temp"),
+  },
+};
+
+// --- HELPER FUNCTIONS ---
+
+function toggleInputState(enabled) {
+  dom.inputs.celsiusBtn.disabled = !enabled;
+  dom.inputs.fahrenheitBtn.disabled = !enabled;
+  dom.inputs.searchBtn.disabled = !enabled;
+  dom.inputs.city.disabled = !enabled;
 }
 
-// --- FUNGSI TEMA DINAMIS ---
-function updateBackground(condition) {
-  const body = document.body;
-  let newGradient;
-  const conditionLower = condition.toLowerCase();
-
-  // Skema Warna COOL TONES / DARK MODE
-  if (conditionLower.includes("clear")) {
-    newGradient = "linear-gradient(135deg, #00BFFF 0%, #1E90FF 100%)";
-  } else if (
-    conditionLower.includes("cloud") ||
-    conditionLower.includes("overcast")
-  ) {
-    newGradient = "linear-gradient(135deg, #6C7A89 0%, #95A5A6 100%)";
-  } else if (
-    conditionLower.includes("rain") ||
-    conditionLower.includes("drizzle")
-  ) {
-    newGradient = "linear-gradient(135deg, #34495E 0%, #5D6D7E 100%)";
-  } else if (
-    conditionLower.includes("snow") ||
-    conditionLower.includes("sleet")
-  ) {
-    newGradient = "linear-gradient(135deg, #D4E6F1 0%, #EAEFF2 100%)";
-  } else if (conditionLower.includes("thunderstorm")) {
-    newGradient = "linear-gradient(135deg, #1C2833 0%, #2E4053 100%)";
-  } else if (
-    conditionLower.includes("mist") ||
-    conditionLower.includes("fog")
-  ) {
-    newGradient = "linear-gradient(135deg, #E0E0E0 0%, #F5F5F5 100%)";
-  } else {
-    newGradient = "linear-gradient(135deg, #2C3E50 0%, #4A637D 100%)";
-  }
-  body.style.background = newGradient;
+function getUnitParams() {
+  return {
+    param: state.unit === "metric" ? "metric" : "imperial",
+    symbol: state.unit === "metric" ? "°C" : "°F",
+    speed: state.unit === "metric" ? " m/s" : " mph",
+  };
 }
 
-// --- FUNGSI UTAMA PENGAMBIL DATA (FINAL FIX) ---
-async function fetchAndAnimateData(query) {
-  if (!query) {
-    displayError("Silakan masukkan nama kota.");
+function convertToCelsius(temp) {
+  if (state.unit === "metric") return temp;
+  return ((temp - 32) * 5) / 9;
+}
+
+/**
+ * MENGATUR TEMA LATAR BELAKANG
+ * Mengubah gradient CSS berdasarkan suhu yang dinormalisasi ke Celcius.
+ */
+function updateThemeByTemperature(temp) {
+  if (temp === null || temp === undefined) {
+    document.body.style.background =
+      "linear-gradient(135deg, #2c3e50 0%, #4a637d 100%)";
     return;
   }
 
-  // **TINDAKAN KRITIS:** Nonaktifkan tombol saat fetch dimulai (anti-bug)
-  toggleUnitButtons(false);
+  const tempC = convertToCelsius(temp);
+  const { HOT, WARM, COOL } = CONFIG.TEMP_THRESHOLDS;
+  let gradient;
 
-  // 1. Inisiasi Fade-Out dan Reset Visual
-  elements.errorMsgDiv.classList.add("hidden");
-  elements.weatherDataDiv.classList.add("fade-out");
-  elements.forecastContainer.classList.add("fade-out");
-  elements.forecastHeader.classList.add("fade-out");
-
-  // 2. Lakukan Fetch API secara Asinkron
-  const unitParam = currentUnit === "metric" ? "metric" : "imperial";
-
-  let currentWeatherApi;
-  if (typeof query === "object" && query.lat && query.lon) {
-    currentWeatherApi = `${CURRENT_WEATHER_URL}?lat=${query.lat}&lon=${query.lon}&appid=${API_KEY}&units=${unitParam}&lang=id`;
+  if (tempC >= HOT) {
+    gradient = "linear-gradient(135deg, #FF4E50 0%, #F9D423 100%)"; // Panas (Merah-Kuning)
+  } else if (tempC >= WARM) {
+    gradient = "linear-gradient(135deg, #2980B9 0%, #F4D03F 100%)"; // Hangat (Biru-Emas)
+  } else if (tempC >= COOL) {
+    gradient = "linear-gradient(135deg, #00B4DB 0%, #0083B0 100%)"; // Sejuk (Biru Langit)
   } else {
-    currentWeatherApi = `${CURRENT_WEATHER_URL}?q=${query}&appid=${API_KEY}&units=${unitParam}&lang=id`;
+    gradient = "linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%)"; // Dingin (Biru Es)
   }
 
-  let dataLoaded = null;
-  let forecastDataLoaded = null;
-  let errorOccurred = null;
+  document.body.style.background = gradient;
+}
+
+// --- LOGIKA UTAMA (API FETCH) ---
+
+async function fetchWeatherData(query) {
+  if (!query) {
+    showError("Silakan masukkan nama kota.");
+    return;
+  }
+
+  toggleInputState(false);
+  startTransitionAnimation();
+
+  const unitParam = getUnitParams().param;
+
+  // Construct URL
+  const queryParam =
+    typeof query === "object"
+      ? `lat=${query.lat}&lon=${query.lon}`
+      : `q=${query}`;
+
+  const weatherUrl = `${CONFIG.BASE_URL.CURRENT}?${queryParam}&appid=${CONFIG.API_KEY}&units=${unitParam}&lang=id`;
 
   try {
-    const response = await fetch(currentWeatherApi);
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.message || `Gagal mengambil data: Status ${response.status}`
-      );
-    }
-    dataLoaded = await response.json();
+    // 1. Fetch Current Weather
+    const response = await fetch(weatherUrl);
+    if (!response.ok) throw new Error("Kota tidak ditemukan.");
+    const currentData = await response.json();
 
-    const lat = dataLoaded.coord.lat;
-    const lon = dataLoaded.coord.lon;
+    // 2. Fetch Forecast (using coords from first call for accuracy)
+    const { lat, lon } = currentData.coord;
+    const forecastUrl = `${CONFIG.BASE_URL.FORECAST}?lat=${lat}&lon=${lon}&appid=${CONFIG.API_KEY}&units=${unitParam}`;
+    const forecastResponse = await fetch(forecastUrl);
+    if (!forecastResponse.ok)
+      throw new Error("Gagal mengambil data perkiraan.");
+    const forecastData = await forecastResponse.json();
 
-    const forecastApi = `${FORECAST_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unitParam}`;
-    const forecastResponse = await fetch(forecastApi);
-    if (!forecastResponse.ok) {
-      throw new Error(
-        `Gagal mengambil perkiraan: Status ${forecastResponse.status}`
-      );
-    }
-    forecastDataLoaded = await forecastResponse.json();
+    // 3. Handle Success after animation
+    setTimeout(() => {
+      handleFetchSuccess(currentData, forecastData);
+    }, CONFIG.ANIMATION_DURATION);
   } catch (error) {
-    errorOccurred = error;
+    setTimeout(() => {
+      handleFetchError(error.message);
+    }, CONFIG.ANIMATION_DURATION);
   }
-
-  // 3. Tunggu transisi lama (fade-out) selesai
-  setTimeout(() => {
-    // Hapus kelas fade-out
-    elements.weatherDataDiv.classList.remove("fade-out");
-    elements.forecastContainer.classList.remove("fade-out");
-    elements.forecastHeader.classList.remove("fade-out");
-
-    if (errorOccurred) {
-      currentWeatherData = null; // Reset state global data
-
-      elements.weatherDataDiv.classList.add("hidden");
-      elements.forecastContainer.classList.add("hidden");
-      elements.forecastHeader.classList.add("hidden");
-      displayError(`Pencarian gagal: ${errorOccurred.message}.`);
-    } else {
-      // Jika SUKSES, tampilkan data baru dan aktifkan tombol
-      displayCurrentWeather(dataLoaded);
-      processAndDisplayForecast(forecastDataLoaded);
-      toggleUnitButtons(true);
-    }
-  }, TRANSITION_DURATION);
 }
 
-// --- FUNGSI DISPLAY ---
-function displayCurrentWeather(data) {
-  const unitSymbol = currentUnit === "metric" ? "°C" : "°F";
-  const speedUnit = currentUnit === "metric" ? " m/s" : " mph";
-
-  currentWeatherData = data;
-
-  elements.locationName.textContent = `${data.name}, ${data.sys.country}`;
-  elements.currentTemp.textContent = Math.round(data.main.temp);
-  document.querySelector(".unit-symbol").textContent = unitSymbol;
-  elements.weatherDesc.textContent = data.weather[0].description;
-  elements.feelsLike.textContent = `${Math.round(
-    data.main.feels_like
-  )}${unitSymbol}`;
-  elements.humidity.textContent = `${data.main.humidity}%`;
-  elements.windSpeed.textContent = `${data.wind.speed}${speedUnit}`;
-  elements.pressure.textContent = `${data.main.pressure} hPa`;
-  elements.weatherIcon.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
-
-  elements.minTemp.textContent = `${Math.round(
-    data.main.temp_min
-  )}${unitSymbol}`;
-  elements.maxTemp.textContent = `${Math.round(
-    data.main.temp_max
-  )}${unitSymbol}`;
-
-  updateBackground(data.weather[0].main);
-
-  elements.weatherDataDiv.classList.remove("hidden");
+function startTransitionAnimation() {
+  dom.containers.errorMsg.classList.add(UI_CLASSES.HIDDEN);
+  dom.containers.weatherData.classList.add(UI_CLASSES.FADE_OUT);
+  dom.containers.forecast.classList.add(UI_CLASSES.FADE_OUT);
+  dom.containers.forecastHeader.classList.add(UI_CLASSES.FADE_OUT);
 }
 
-function processAndDisplayForecast(data) {
-  elements.forecastContainer.innerHTML = "";
+function stopTransitionAnimation() {
+  dom.containers.weatherData.classList.remove(UI_CLASSES.FADE_OUT);
+  dom.containers.forecast.classList.remove(UI_CLASSES.FADE_OUT);
+  dom.containers.forecastHeader.classList.remove(UI_CLASSES.FADE_OUT);
+}
+
+function handleFetchSuccess(currentData, forecastData) {
+  stopTransitionAnimation();
+
+  state.currentData = currentData;
+  toggleInputState(true);
+
+  renderCurrentWeather(currentData);
+  renderForecast(forecastData);
+}
+
+function handleFetchError(message) {
+  stopTransitionAnimation();
+  state.currentData = null;
+  toggleInputState(true);
+  showError(`Pencarian gagal: ${message}`);
+}
+
+// --- RENDERING UI ---
+
+function renderCurrentWeather(data) {
+  const units = getUnitParams();
+
+  // Update Text Content
+  dom.weatherInfo.location.textContent = `${data.name}, ${data.sys.country}`;
+  dom.weatherInfo.temp.textContent = Math.round(data.main.temp);
+  dom.containers.unitSymbol.textContent = units.symbol;
+  dom.weatherInfo.desc.textContent = data.weather[0].description;
+  dom.weatherInfo.feelsLike.textContent = `${Math.round(data.main.feels_like)}${
+    units.symbol
+  }`;
+  dom.weatherInfo.humidity.textContent = `${data.main.humidity}%`;
+  dom.weatherInfo.wind.textContent = `${data.wind.speed}${units.speed}`;
+  dom.weatherInfo.pressure.textContent = `${data.main.pressure} hPa`;
+  dom.weatherInfo.minTemp.textContent = `${Math.round(data.main.temp_min)}${
+    units.symbol
+  }`;
+  dom.weatherInfo.maxTemp.textContent = `${Math.round(data.main.temp_max)}${
+    units.symbol
+  }`;
+
+  // Icon
+  dom.weatherInfo.icon.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+  // Theme & Visibility
+  updateThemeByTemperature(data.main.temp);
+  dom.containers.weatherData.classList.remove(UI_CLASSES.HIDDEN);
+}
+
+function renderForecast(data) {
+  dom.containers.forecast.innerHTML = "";
+  const units = getUnitParams();
   const dailyForecasts = {};
-  const unitSymbol = currentUnit === "metric" ? "°C" : "°F";
 
+  // Filter: Ambil satu data per hari (approx jam 12:00)
   data.list.forEach((item) => {
     const date = item.dt_txt.split(" ")[0];
     if (!dailyForecasts[date]) {
-      dailyForecasts[date] = { temps: [], icons: [] };
-    }
-    dailyForecasts[date].temps.push(item.main.temp_min, item.main.temp_max);
+      // Init dengan data dummy/pertama
+      dailyForecasts[date] = item;
+      dailyForecasts[date].min = item.main.temp;
+      dailyForecasts[date].max = item.main.temp;
+    } else {
+      // Cari min/max sesungguhnya hari itu
+      dailyForecasts[date].min = Math.min(
+        dailyForecasts[date].min,
+        item.main.temp
+      );
+      dailyForecasts[date].max = Math.max(
+        dailyForecasts[date].max,
+        item.main.temp
+      );
 
-    if (item.dt_txt.includes("12:00:00") || item.dt_txt.includes("15:00:00")) {
-      dailyForecasts[date].icon = item.weather[0].icon;
-      dailyForecasts[date].description = item.weather[0].description;
+      // Prioritaskan ikon siang hari
+      if (item.dt_txt.includes("12:00:00")) {
+        dailyForecasts[date].weather = item.weather;
+      }
     }
   });
 
-  Object.keys(dailyForecasts)
-    .slice(1, 6)
-    .forEach((dateStr) => {
-      const temps = dailyForecasts[dateStr].temps;
-      const minTemp = Math.round(Math.min(...temps));
-      const maxTemp = Math.round(Math.max(...temps));
-      const iconCode =
-        dailyForecasts[dateStr].icon || data.list[0].weather[0].icon;
+  const forecastDays = Object.values(dailyForecasts).slice(1, 6); // Ambil 5 hari kedepan
 
-      const date = new Date(dateStr);
-      const dayName = date.toLocaleDateString("id-ID", { weekday: "short" });
+  forecastDays.forEach((item) => {
+    const date = new Date(item.dt_txt);
+    const dayName = date.toLocaleDateString("id-ID", { weekday: "short" });
+    const minTemp = Math.round(item.min);
+    const maxTemp = Math.round(item.max);
 
-      const html = `
-            <div class="forecast-card">
-                <div class="forecast-date">${dayName}</div>
-                <img class="forecast-icon" src="https://openweathermap.org/img/wn/${iconCode}@2x.png" alt="${
-        dailyForecasts[dateStr].description || ""
-      }">
-                <div class="forecast-temp">
-                    ${maxTemp}${unitSymbol} / ${minTemp}${unitSymbol}
-                </div>
-            </div>
-        `;
-      elements.forecastContainer.insertAdjacentHTML("beforeend", html);
-    });
+    const html = `
+      <div class="forecast-card">
+          <div class="forecast-date">${dayName}</div>
+          <img class="forecast-icon" src="https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png" alt="${item.weather[0].description}">
+          <div class="forecast-temp">
+              ${maxTemp}${units.symbol} / ${minTemp}${units.symbol}
+          </div>
+      </div>
+    `;
+    dom.containers.forecast.insertAdjacentHTML("beforeend", html);
+  });
 
-  elements.forecastContainer.classList.remove("hidden");
-  elements.forecastHeader.classList.remove("hidden");
+  dom.containers.forecast.classList.remove(UI_CLASSES.HIDDEN);
+  dom.containers.forecastHeader.classList.remove(UI_CLASSES.HIDDEN);
 }
 
-// --- FUNGSI UTILITY & EVENT LISTENER ---
+function showError(message) {
+  dom.containers.errorMsg.textContent = message;
+  dom.containers.errorMsg.classList.remove(UI_CLASSES.HIDDEN);
 
-function displayError(message) {
-  elements.errorMsgDiv.textContent = message;
-  elements.errorMsgDiv.classList.remove("hidden");
+  dom.containers.weatherData.classList.add(UI_CLASSES.HIDDEN);
+  dom.containers.forecast.classList.add(UI_CLASSES.HIDDEN);
+  dom.containers.forecastHeader.classList.add(UI_CLASSES.HIDDEN);
 
-  elements.weatherDataDiv.classList.add("hidden");
-  elements.forecastContainer.classList.add("hidden");
-  elements.forecastHeader.classList.add("hidden");
-
-  updateBackground("");
+  updateThemeByTemperature(null);
 }
 
-function updateDisplayUnits(newUnit) {
-  if (newUnit === currentUnit) return;
+// --- EVENT HANDLERS ---
 
-  // Ambil nama kota dari global state (yang terakhir sukses)
-  const cityToFetch = currentWeatherData
-    ? currentWeatherData.name
-    : elements.cityInput.value.trim();
+function changeUnit(newUnit) {
+  if (state.unit === newUnit) return;
 
-  if (!cityToFetch) {
-    displayError("Silakan masukkan nama kota.");
-    return;
-  }
+  state.unit = newUnit;
+  dom.inputs.celsiusBtn.classList.toggle(
+    UI_CLASSES.ACTIVE,
+    newUnit === "metric"
+  );
+  dom.inputs.fahrenheitBtn.classList.toggle(
+    UI_CLASSES.ACTIVE,
+    newUnit === "imperial"
+  );
 
-  currentUnit = newUnit;
-
-  elements.celsiusBtn.classList.toggle("active", newUnit === "metric");
-  elements.fahrenheitBtn.classList.toggle("active", newUnit === "imperial");
-
-  fetchAndAnimateData(cityToFetch);
+  const cityQuery = state.currentData
+    ? state.currentData.name
+    : dom.inputs.city.value.trim();
+  if (cityQuery) fetchWeatherData(cityQuery);
 }
 
-// Event Listeners
-elements.searchButton.addEventListener("click", () => {
-  fetchAndAnimateData(elements.cityInput.value.trim());
-});
-elements.cityInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    fetchAndAnimateData(elements.cityInput.value.trim());
-  }
-});
-elements.celsiusBtn.addEventListener("click", () =>
-  updateDisplayUnits("metric")
+dom.inputs.searchBtn.addEventListener("click", () =>
+  fetchWeatherData(dom.inputs.city.value.trim())
 );
-elements.fahrenheitBtn.addEventListener("click", () =>
-  updateDisplayUnits("imperial")
+dom.inputs.city.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") fetchWeatherData(dom.inputs.city.value.trim());
+});
+
+dom.inputs.celsiusBtn.addEventListener("click", () => changeUnit("metric"));
+dom.inputs.fahrenheitBtn.addEventListener("click", () =>
+  changeUnit("imperial")
 );
 
-// Panggil fungsi saat halaman pertama kali dimuat
-fetchAndAnimateData(elements.cityInput.value);
+// --- INIT ---
+fetchWeatherData(dom.inputs.city.value);

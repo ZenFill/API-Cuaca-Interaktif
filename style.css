@@ -6,7 +6,7 @@
 }
 
 body {
-  font-family: "Roboto", sans-serif;
+  font-family: "Poppins", sans-serif; /* FONT BARU: Poppins */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,45 +14,58 @@ body {
   /* Latar Belakang Gradasi Dinamis (diatur di JS) */
   background: linear-gradient(135deg, #2c3e50 0%, #4a637d 100%);
   padding: 20px;
-  transition: background 1.5s ease-in-out; /* Transisi Tema Halus */
+  transition: background 1.5s ease-in-out;
+  color: white;
 }
 
-/* KOTAK APLIKASI UTAMA (Minimalis Dark Glass) */
+/* KOTAK APLIKASI UTAMA (Modern Soft Glass) */
 .weather-app {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  background: rgba(255, 255, 255, 0.1); /* Lebih transparan */
+  backdrop-filter: blur(40px); /* Blur lebih kuat */
+  -webkit-backdrop-filter: blur(40px);
 
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 40px; /* Lebih bulat (Friendly) */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 
   padding: 40px;
-  box-shadow: 0 40px 100px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15); /* Shadow lebih halus */
 
   text-align: center;
   width: 95%;
-  max-width: 700px;
+  max-width: 500px; /* Sedikit lebih ramping agar terlihat compact */
 
   transition: all 0.5s ease-in-out;
-  animation: fadeIn 0.8s ease-out;
+  animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy animation */
   display: flex;
   flex-direction: column;
 }
 
-/* KEYFRAMES dan FIX ANTI-JUMPY */
+/* BOUNCY ANIMATION */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 .fade-out {
   opacity: 0 !important;
-  transform: scale(0.98);
+  transform: scale(0.95);
   pointer-events: none;
 }
 .weather-info.hidden,
@@ -66,290 +79,337 @@ body {
 }
 .weather-info:not(.hidden),
 .forecast-container:not(.hidden) {
-  min-height: 150px;
+  /* min-height: 150px; Hapus fixed height agar responsif */
   transition: opacity 0.4s ease, transform 0.4s ease;
-  animation: slideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-.forecast-container:not(.hidden) {
-  min-height: 100px;
-}
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  animation: fadeIn 0.6s ease-out;
 }
 
+/* JUDUL APLIKASI */
 .app-title {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 22px;
   color: #fff;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
-  margin-bottom: 30px;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  margin-bottom: 25px;
+  opacity: 0.9;
 }
 
-/* --- PERBAIKAN HEADER CONTROLS (Pencarian & Toggle) --- */
-
+/* --- CONTROLS (Pencarian & Toggle) --- */
 .header-controls {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 15px;
 }
 
-/* Search Box: Gabungan Input & Button */
+/* Search Box: Floating Pill Style */
 .search-box {
   display: flex;
   width: 100%;
-  max-width: 380px;
-  margin-bottom: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  border-radius: 35px;
-  overflow: hidden;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50px; /* PILL SHAPE */
+  padding: 5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s;
+}
+.search-box:focus-within {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
 }
 
 #city-input {
   flex-grow: 1;
-  padding: 15px 25px;
+  padding: 12px 20px;
   border: none;
-  background: rgba(255, 255, 255, 0.98);
-  font-size: 18px;
-  box-shadow: none;
-  border-radius: 0;
+  background: transparent;
+  font-size: 16px;
+  color: white;
   outline: none;
+  font-family: inherit;
 }
-#city-input:focus {
-  box-shadow: 0 0 15px rgba(0, 191, 255, 0.7);
-  background: white;
+#city-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 #search-button {
-  padding: 15px 20px;
-  background: linear-gradient(145deg, #00bfff 0%, #1e90ff 100%);
+  padding: 10px 25px;
+  background: #00bfff; /* Warna cerah */
   color: white;
-  font-weight: 500;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  border-radius: 0;
-  box-shadow: none;
-  transition: background-color 0.3s ease, transform 0.1s ease;
+  border-radius: 50px; /* Pill shape button */
+  box-shadow: 0 4px 10px rgba(0, 191, 255, 0.3);
+  transition: all 0.3s ease;
 }
 #search-button:hover {
-  background: linear-gradient(145deg, #1e90ff 0%, #00bfff 100%);
-  transform: none;
+  background: #00a0d6;
+  transform: translateY(-2px);
 }
 #search-button:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
 }
 
-/* UNIT TOGGLE (Ramping dan Terpusat) */
+/* UNIT TOGGLE (Simple & Round) */
 .unit-toggle {
   display: flex;
-  align-self: center;
-  border-radius: 30px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50px;
+  padding: 4px;
 }
 .unit-toggle button {
-  padding: 10px 18px;
+  padding: 6px 16px;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  line-height: 1;
+  border-radius: 50px;
   cursor: pointer;
-  box-shadow: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
 }
 .unit-toggle button.active {
-  background-color: #00bfff;
-  color: white;
-  box-shadow: none;
-}
-.unit-toggle button:not(.active):hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: white;
+  color: #2c3e50;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* DATA CUACA UTAMA */
+/* --- DATA CUACA (HERO SECTION) --- */
 .location-name {
-  font-size: 42px;
-  font-weight: 300;
-  color: #fff;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
-  margin-bottom: 10px;
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+.main-temp-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+}
+.weather-icon {
+  width: 100px;
+  height: 100px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)); /* Glow effect */
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .main-temp {
-  font-size: 140px;
-  font-weight: 100;
-  color: #fff;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.6);
+  font-size: 80px;
+  font-weight: 700;
   line-height: 1;
-  margin-top: -15px;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
+.unit-symbol {
+  font-size: 40px;
+  vertical-align: top;
+  margin-left: 5px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
 .description {
-  font-size: 24px;
-  font-weight: 300;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
-  margin-top: 5px;
-  margin-bottom: 40px;
+  font-size: 18px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.2);
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  margin-bottom: 30px;
   text-transform: capitalize;
 }
 
-/* TATA LETAK KOLOM INFO RAPIH & SIMPEL */
+/* --- DETAILS GRID (CARD STYLE - MAJOR CHANGE) --- */
 .details-grid {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 30px;
-  gap: 15px 30px;
-  grid-template-columns: repeat(3, 1fr);
-  max-width: 600px;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 Kolom */
+  gap: 15px;
+  margin: 0 auto 30px auto;
+  width: 100%;
 }
-@media (max-width: 768px) {
-  .details-grid {
-    grid-template-columns: 1fr;
-    max-width: 90%;
-  }
-}
-
 .detail-item {
-  /* Menghilangkan kotak, menjadikannya daftar horizontal */
-  background: none;
-  padding: 8px 0;
-  border-radius: 0;
-  border: none;
-
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: background-color 0.3s ease;
+  flex-direction: column;
+  align-items: center; /* Center content in cards */
+  justify-content: center;
+  transition: transform 0.3s ease, background 0.3s;
 }
 .detail-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  transform: none;
-  box-shadow: none;
-  border-radius: 5px;
-}
-/* Menghilangkan border pada item terakhir */
-.details-grid .detail-item:nth-last-child(1) {
-  border-bottom: none;
-}
-.details-grid .detail-item:nth-last-child(2) {
-  @media (min-width: 769px) {
-    border-bottom: none;
-  }
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-5px);
 }
 
-.label {
-  color: #87ceeb;
-  font-size: 13px;
-  margin-bottom: 0;
-  font-weight: 400;
+.detail-item .label {
+  color: #dbeeff;
+  font-size: 12px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex-grow: 1;
-  text-align: left;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  text-align: center;
 }
-.value {
+.detail-item .value {
   color: white;
   font-size: 18px;
-  font-weight: 500;
-  text-align: right;
+  font-weight: 600;
 }
 
-/* PERKIRAAN 5 HARI (Ramping dan Horizontal) */
+/* --- FORECAST (Horizontal Scroll Cards) --- */
 .forecast-title {
-  color: #87ceeb;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-  margin-top: 30px;
+  font-size: 16px;
+  font-weight: 600;
   margin-bottom: 15px;
-  font-weight: 500;
+  opacity: 0.9;
+  text-align: left;
+  padding-left: 10px;
 }
 .forecast-container {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 10px;
+  gap: 12px;
   overflow-x: auto;
+  padding: 10px 5px 20px 5px; /* bottom padding for shadow clipping */
   -webkit-overflow-scrolling: touch;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 15px;
+  /* Scrollbar hide */
+  scrollbar-width: none;
+}
+.forecast-container::-webkit-scrollbar {
+  display: none;
 }
 
 .forecast-card {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 15px 12px;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  min-width: 110px;
-  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15px 10px;
+  border-radius: 20px;
+  min-width: 90px;
   text-align: center;
   transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 .forecast-card:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-5px) scale(1.05);
 }
 
 .forecast-date {
-  font-weight: 700;
-  color: #fff;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 14px;
   margin-bottom: 5px;
 }
 .forecast-temp {
   font-weight: 500;
-  color: #87ceeb;
-  font-size: 16px;
+  font-size: 13px;
+  margin-top: 5px;
 }
 .forecast-icon {
   width: 40px;
   height: 40px;
-  margin: 5px 0;
+}
+
+/* ERROR MESSAGE */
+.error-text {
+  background: rgba(255, 82, 82, 0.2);
+  border: 1px solid #ff5252;
+  color: #ffdcd1;
+  padding: 15px;
+  border-radius: 15px;
+  margin-top: 20px;
+  font-size: 14px;
 }
 
 /* MEDIA QUERIES */
-@media (max-width: 768px) {
+
+/* Desktop / Tablet Landscape (> 768px) -> DASHBOARD MODE */
+@media (min-width: 768px) {
+  .weather-app {
+    max-width: 850px;
+    padding: 50px;
+  }
+
+  .weather-info {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr; /* Kiri (Main) 40%, Kanan (Grid) 60% */
+    gap: 40px;
+    align-items: center;
+    text-align: left; /* Rata kiri untuk desktop */
+    margin-bottom: 20px;
+  }
+
+  /* Kiri: Info Utama */
+  .location-name {
+    text-align: left;
+    margin-left: 10px;
+  }
+  .main-temp-section {
+    flex-direction: row; /* Ikon dan Suhu Sebelahan */
+    align-items: center;
+    margin: 0;
+  }
+  .weather-icon {
+    width: 140px;
+    height: 140px;
+  }
   .main-temp {
     font-size: 100px;
   }
-  .details-grid {
-    grid-template-columns: 1fr;
-    max-width: 100%;
+  .description {
+    margin-left: 10px;
   }
+
+  /* Kanan: Details Grid */
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr); /* Tetap 2 kolom tapi lebih lebar */
+    border-top: none; /* Hapus garis pemisah mobile */
+    padding-top: 0;
+    margin: 0;
+    gap: 20px;
+  }
+
+  /* Forecast: Grid bukan scroll */
   .forecast-container {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    overflow-x: visible;
+    justify-content: center;
+    padding: 0;
+  }
+  .forecast-card {
+    min-width: auto;
   }
 }
-@media (max-width: 450px) {
+
+/* Fix untuk Mobile Kecil */
+@media (max-width: 480px) {
   .main-temp {
-    font-size: 80px;
+    font-size: 70px;
   }
   .location-name {
-    font-size: 30px;
+    font-size: 26px;
   }
-  .description {
-    font-size: 20px;
+  .details-grid {
+    grid-template-columns: repeat(
+      2,
+      1fr
+    ); /* Tetap 2 kolom di mobile agar rapi */
+    gap: 10px;
   }
-  .header-controls {
-    margin-bottom: 30px;
+  .weather-app {
+    padding: 25px 20px;
+    border-radius: 30px;
   }
-}
-/* Tampilan untuk Tombol yang Dinonaktifkan (Disabled) */
-.unit-toggle button:disabled {
-  opacity: 0.5; /* Agak transparan */
-  cursor: not-allowed; /* Tunjukkan bahwa tombol tidak bisa diklik */
-  box-shadow: none;
-  background-color: rgba(255, 255, 255, 0.1) !important;
-}
-.unit-toggle button:disabled.active {
-  background-color: #00bfff !important; /* Pertahankan warna aktif, tapi lebih gelap */
 }
